@@ -1,9 +1,9 @@
-import Image from "next/image";
+import React from 'react'
 
-export default function Home() {
+export default function page() {
   return (
-    <main>
+    <div className='flex '>
       LANDING PAGE
-    </main>
-  );
+    </div>
+  )
 }
