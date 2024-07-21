@@ -2,11 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
-function formatDate(dateString) {
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString(undefined, options);
-}
+import WordFadeIn from "@/components/magicui/word-fade-in";
 
 export default function page() {
   const searchParams = useSearchParams();
@@ -33,7 +29,7 @@ export default function page() {
         throw new Error('Failed to fetch repositories');
       }
       const data = await response.json();
-      setRepos(data);
+      setRepos(data.slice(0, 4));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -45,18 +41,18 @@ export default function page() {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-black text-[#FAFAFA] p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Welcome, {username}!</h1>
-        <h2 className="text-2xl font-semibold mb-4">Your Repositories (Most Recently Active First)</h2>
-        <div className="space-y-4">
+        <WordFadeIn className="text-[#DC2626] text-3xl font-bold mb-2" words={`Welcome ${username} !`}/>
+        <WordFadeIn className="text-[#FAFAFA] text-xl mb-6" words="How can I help you today?" />
+        <h2 className="text-2xl font-semibold mb-4">Your Top Repositories</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {repos.map(repo => (
-            <div key={repo.id} className="bg-white p-4 rounded shadow">
-              <h3 className="text-xl font-semibold mb-2">{repo.name}</h3>
-              <p className="text-gray-600 mb-2">{repo.description || 'No description'}</p>
-              <p className="text-sm text-gray-500">Language: {repo.language || 'Not specified'}</p>
-              <p className="text-sm text-gray-500">{repo.private ? 'Private' : 'Public'}</p>
-              <p className="text-sm text-gray-500">Last updated: {formatDate(repo.updated_at)}</p>
+            <div key={repo.id} className="bg-gray-800 p-4 rounded-lg shadow-md">
+              <h3 className="text-xl font-semibold mb-2 text-[#DC2626]">{repo.name}</h3>
+              <p className="text-sm text-gray-300">
+                Language: {repo.language || 'Not specified'}
+              </p>
             </div>
           ))}
         </div>
