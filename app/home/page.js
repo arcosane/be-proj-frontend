@@ -3,8 +3,11 @@
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import WordFadeIn from "@/components/magicui/word-fade-in";
+import { MagicCard } from "@/components/magicui/magic-card";
+import { FaCode, FaStar, FaCodeBranch } from 'react-icons/fa';
+import BlurFade from "@/components/magicui/blur-fade";
 
-export default function page() {
+export default function Page() {
   const searchParams = useSearchParams();
   const [username, setUsername] = useState('');
   const [repos, setRepos] = useState([]);
@@ -37,23 +40,50 @@ export default function page() {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-black text-white text-2xl">Loading...</div>;
+  if (error) return <div className="min-h-screen flex items-center justify-center bg-black text-red-500 text-2xl">Error: {error}</div>;
 
   return (
     <div className="min-h-screen bg-black text-[#FAFAFA] p-8">
-      <div className="max-w-4xl mx-auto">
-        <WordFadeIn className="text-[#DC2626] text-3xl font-bold mb-2" words={`Welcome ${username} !`}/>
-        <WordFadeIn className="text-[#FAFAFA] text-xl mb-6" words="How can I help you today?" />
-        <h2 className="text-2xl font-semibold mb-4">Your Top Repositories</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="max-w-6xl mx-auto">
+        <WordFadeIn className="text-[#DC2626] text-4xl font-bold mb-2" words={`Welcome ${username} !`}/>
+        <WordFadeIn className="text-[#FAFAFA] text-2xl mb-10" words="Here are your top repositories:" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {repos.map(repo => (
-            <div key={repo.id} className="bg-gray-800 p-4 rounded-lg shadow-md">
-              <h3 className="text-xl font-semibold mb-2 text-[#DC2626]">{repo.name}</h3>
-              <p className="text-sm text-gray-300">
-                Language: {repo.language || 'Not specified'}
-              </p>
-            </div>
+            <BlurFade key={repo.id} delay={0.2} inView>
+              <MagicCard 
+                key={repo.id}
+                className="cursor-pointer flex flex-col justify-between p-6 shadow-2xl"
+                gradientColor="#D9D9D955"
+              >
+                <div>
+                  <h3 className="text-3xl font-bold mb-4 text-[#DC2626]">{repo.name}</h3>
+                  <p className="text-lg text-black mb-4 line-clamp-2">
+                    {repo.description || 'No description available'}
+                  </p>
+                </div>
+                <div className="flex space-x-2">
+                  <div className="flex items-center space-x-2">
+                    <FaCode className="text-[#DC2626]" />
+                    <span className="text-md text-black">
+                      {repo.language || 'Not specified'}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <FaStar className="text-yellow-500" />
+                    <span className="text-md text-black">
+                      {repo.stargazers_count || 0} stars
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <FaCodeBranch className="text-green-500" />
+                    <span className="text-md text-black">
+                      {repo.forks_count || 0} forks
+                    </span>
+                  </div>
+                </div>
+              </MagicCard>
+            </BlurFade>
           ))}
         </div>
       </div>
