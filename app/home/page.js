@@ -6,6 +6,8 @@ import WordFadeIn from "@/components/magicui/word-fade-in";
 import { MagicCard } from "@/components/magicui/magic-card";
 import { FaCode, FaStar, FaCodeBranch } from 'react-icons/fa';
 import BlurFade from "@/components/magicui/blur-fade";
+import Navbar from '@/components/navbar';
+import Particles from "@/components/magicui/particles";
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -44,7 +46,18 @@ export default function Page() {
   if (error) return <div className="min-h-screen flex items-center justify-center bg-black text-red-500 text-2xl">Error: {error}</div>;
 
   return (
-    <div className="min-h-screen bg-black text-[#FAFAFA] p-8">
+    <div className='bg-black'>
+    <Navbar />
+    <Particles
+        className="absolute inset-0"
+        quantity={500}
+        ease={80}
+        color="ffffff"
+        refresh
+      />
+
+    <div className="min-h-screen pt-[100px] bg-black text-[#FAFAFA] p-8">
+      
       <div className="max-w-6xl mx-auto">
         <WordFadeIn className="text-[#DC2626] text-4xl font-bold mb-2" words={`Welcome ${username} !`}/>
         <WordFadeIn className="text-[#FAFAFA] text-2xl mb-10" words="Here are your top repositories:" />
@@ -87,6 +100,7 @@ export default function Page() {
           ))}
         </div>
       </div>
+    </div>
     </div>
   );
 }

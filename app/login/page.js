@@ -2,9 +2,7 @@
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
-
-
-export default function Page() {
+export default function page() {
   const router = useRouter();
 
   const handleGitHubLogin = async () => {
@@ -22,26 +20,6 @@ export default function Page() {
     }
   };
 
-  //aston ka UI
-  // <div className="flex items-center justify-center min-h-screen bg-gray-100">
-    //   <div className="p-6 bg-white rounded shadow-md">
-    //     <h1 className="mb-4 text-2xl font-bold text-center">Login</h1>
-
-    //     <button
-    //       onClick={handleGitHubLogin}
-    //       className="w-full px-4 py-2 text-white bg-gray-800 rounded hover:bg-gray-700"
-    //     >
-    //       Login with GitHub
-    //     </button>
-    //   </div>
-    // </div>
-
-
-
-  
-  
-
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900">
       <div className="p-8 bg-gray-800 text-white rounded-lg shadow-lg w-full max-w-md">
@@ -57,7 +35,6 @@ export default function Page() {
             Github
           </button>
           <button
-            
             className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded inline-flex items-center"
           >
             <Image src="/google-icon.png" alt="Google" width={24} height={24} className="mr-2" />
@@ -72,7 +49,7 @@ export default function Page() {
           <div className="relative bg-gray-800 px-4 text-sm">OR CONTINUE WITH</div>
         </div>
 
-        <form >
+        <form>
           <div className="mb-4">
             <label className="block text-gray-400 mb-2" htmlFor="email">Email</label>
             <input
@@ -81,7 +58,6 @@ export default function Page() {
               id="email"
               name="email"
               placeholder="m@example.com"
-              
             />
           </div>
           <div className="mb-6">
@@ -91,7 +67,6 @@ export default function Page() {
               type="password"
               id="password"
               name="password"
-              
             />
           </div>
           <button
@@ -103,9 +78,5 @@ export default function Page() {
         </form>
       </div>
     </div>
-    
-
-    
   );
-};
-
+}
