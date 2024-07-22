@@ -8,6 +8,7 @@ import { FaCode, FaStar, FaCodeBranch } from 'react-icons/fa';
 import BlurFade from "@/components/magicui/blur-fade";
 import Navbar from '@/components/navbar';
 import Particles from "@/components/magicui/particles";
+import Ripple from '@/components/magicui/ripple';
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -100,6 +101,40 @@ export default function Page() {
           ))}
         </div>
       </div>
+    </div>
+    <div className='min-h-screen pt-[100px] bg-black text-[#FAFAFA] p-8'>
+        <div className="max-w-6xl mx-auto flex flex-col items-center">
+          <WordFadeIn className="text-[#FAFAFA] text-2xl mb-10" words="How can we help you ?" />
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
+          <div className="relative flex h-[300px] w-[300px] p-6 flex-col items-center rounded-lg border md:shadow-xl">
+            <h2 className='text-2xl text-center mb-4'>Code To Documentation</h2>
+            <p className='text-center'>GeneraAutomatically generates comprehensive documentation from codebase, improving code understandability and maintainability.</p>
+            <a href='' className='mt-auto z-10 bg-white text-black px-4 py-2 cursor-pointer rounded-lg shadow-sm hover:shadow-xl'>Learn More</a>
+            <Ripple />
+          </div>
+          <div className="relative flex h-[300px] w-[300px] p-6 flex-col items-center rounded-lg border md:shadow-xl">
+            <h2 className='text-2xl text-center mb-4'>Code Analysis</h2>
+            <p className='text-center'>Visualizes GitHub repository structure and code dependencies, aiding in code comprehension and identifying potential issues.</p>
+            <a href='' className='mt-auto z-10 bg-white text-black px-4 py-2 cursor-pointer rounded-lg shadow-sm hover:shadow-xl'>Learn More</a>
+            <Ripple />
+          </div>
+          <div className="relative flex h-[300px] w-[300px] p-6 flex-col items-center rounded-lg border md:shadow-xl">
+            <h2 className='text-2xl text-center mb-4'>Project Roadmap Generator</h2>
+            <p className='text-center'>Creates visual project roadmaps based on codebase and issue tracking information, facilitating project planning and management.</p>
+            <a href='' className='mt-auto z-10 bg-white text-black px-4 py-2 cursor-pointer rounded-lg shadow-sm hover:shadow-xl'>Learn More</a>
+            <Ripple />
+          </div>
+          <div className="relative flex h-[300px] w-[300px] p-6 flex-col items-center rounded-lg border md:shadow-xl">
+            <h2 className='text-2xl text-center mb-4'>Document to Code</h2>
+            <p className='text-center'>Translates natural language documentation into code snippets, potentially accelerating development and reducing errors.</p>
+            <a href='' className='mt-auto z-10 bg-white text-black px-4 py-2 cursor-pointer rounded-lg shadow-sm hover:shadow-xl'>Learn More</a>
+            <Ripple />
+          </div>
+          </div>
+        </div>
+    </div>
+    <div className='footer h-screen'>
+
     </div>
     </div>
   );
