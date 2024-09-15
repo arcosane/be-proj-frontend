@@ -1,30 +1,90 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export default function Page() {
-  const [messages, setMessages] = useState([
-    { sender: 'user', text: 'Hello!' },
-    { sender: 'bot', text: 'Hi! How can I assist you today?' }
-  ]);
-
+  const API_BASE_URL = 'http://localhost:8000/api';
+  const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
-  const [chats, setChats] = useState([{ chatId: 1, chatName: 'Chat User 1' }]);
-  const [activeChat, setActiveChat] = useState(1); // Tracks the active chat
+  const [chats, setChats] = useState([]);
+  const [activeChat, setActiveChat] = useState(null);
+  const [repositories, setRepositories] = useState([]);
+  const [activeRepo, setActiveRepo] = useState(null);
+  const [repoStructure, setRepoStructure] = useState(null);
 
-  // Handle message sending
-  const handleSendMessage = () => {
-    if (inputValue.trim() === '') return;
-    setMessages([...messages, { sender: 'user', text: inputValue }]);
-    setInputValue('');
+  useEffect(() => {
+    fetchChats();
+    fetchRepositories();
+  }, []);
+
+  const fetchRepositories = async () => {
+    try {
+        const response = await fetch('http://localhost:8000/api/github-repos/', {
+            method: 'GET',
+            credentials: 'include',
+          });
+          if (!response.ok) {
+            throw new Error('Failed to fetch repositories');
+          }
+          const data = await response.json();
+          setRepositories(data);
+    } catch (error) {
+      console.error('Error fetching repositories:', error);
+    }
   };
 
-  // Handle new chat creation
-  const handleNewChat = () => {
-    const newChatId = chats.length + 1;
-    const newChat = { chatId: newChatId, chatName: `Chat User ${newChatId}` };
-    setChats([...chats, newChat]);
-    setActiveChat(newChatId);
-    setMessages([]); // Clear the messages for the new chat
+  const fetchChats = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/chats/`, { withCredentials: true });
+      setChats(response.data);
+    } catch (error) {
+      console.error('Error fetching chats:', error);
+    }
+  };
+  
+  const fetchMessages = async (chatId) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/chats/${chatId}/messages/`, { withCredentials: true });
+      setMessages(response.data);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
+  };
+  
+  const handleSendMessage = async () => {
+    if (inputValue.trim() === '' || !activeChat) return;
+    try {
+      const response = await axios.post(`${API_BASE_URL}/chats/${activeChat}/messages/`, {
+        text: inputValue
+      }, { withCredentials: true });
+      setMessages([...messages, response.data.user_message, response.data.bot_response]);
+      setInputValue('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+  };
+  
+  const handleNewChat = async () => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/chats/`, {
+        chat_name: `Chat ${chats.length + 1}`
+      }, { withCredentials: true });
+      setChats([...chats, response.data]);
+      setActiveChat(response.data.id);
+      setMessages([]);
+    } catch (error) {
+      console.error('Error creating new chat:', error);
+    }
+  };
+  
+  const handleSelectRepo = async (repo) => {
+    setActiveRepo(repo);
+    try {
+      const response = await axios.get(`${API_BASE_URL}/repo-structure/${repo.name}/`, { withCredentials: true });
+      setRepoStructure(response.data.tree);
+    } catch (error) {
+      console.error('Error fetching repo structure:', error);
+    }
   };
 
   return (
@@ -32,53 +92,49 @@ export default function Page() {
       {/* Left Sidebar - Chats */}
       <div className='w-1/5 border-r border-gray-300 p-4'>
         <div className='font-bold text-lg mb-4'>Chats</div>
-        <div>
-          <button 
-            className='bg-blue-500 text-white px-6 py-2 rounded-md' 
-            onClick={handleNewChat}
-          >
-            New Chat
-          </button>
-        </div>
-        <p className='my-2 font-bold text-xl'>Your Chats</p>
-        <div className='flex flex-col'>
-          {chats.map(chat => (
-            <div 
-              key={chat.chatId} 
-              className={`py-2 my-2 px-6 rounded-md text-black bg-slate-300 cursor-pointer ${activeChat === chat.chatId ? 'bg-blue-200' : ''}`}
-              onClick={() => {
-                setActiveChat(chat.chatId);
-                setMessages([]); // Clear messages for a new chat
-              }}
-            >
-              {chat.chatName}
-            </div>
-          ))}
+        <button 
+          className='bg-blue-500 text-white px-6 py-2 rounded-md'
+          onClick={handleNewChat}
+        >
+          New Chat
+        </button>
+        <div className='flex flex-col mt-4'>
+          {chats ? (
+            <>
+            {chats.map(chat => (
+                <div 
+                  key={chat.id} 
+                  className={`py-2 px-4 rounded-md cursor-pointer ${activeChat === chat.id ? 'bg-blue-200' : ''}`}
+                  onClick={() => {
+                    setActiveChat(chat.id);
+                    fetchMessages(chat.id);
+                  }}
+                >
+                  {chat.chat_name}
+                </div>
+              ))}
+              </>
+          ):(<></>)}
         </div>
       </div>
 
       {/* Main Chat Section */}
-      <div className='w-3/5 flex flex-col px-14'>
-        <div className='profile-container flex my-6 px-4 py-2 border border-gray-400 rounded-md w-fit'>
-          <div className='profile-image mx-1 my-1 border rounded-full px-4 py-2'>P</div>
-          <div className='username text-center mt-auto mb-auto mx-1 my-1'>Username</div>
-        </div>
-
-        <div className='chat-content flex flex-col flex-grow overflow-y-auto mb-4'>
+      <div className='w-3/5 flex flex-col p-4'>
+        <div className='chat-content flex-grow overflow-y-auto mb-4'>
           {messages.map((msg, index) => (
-            <div key={index} className={`my-2 flex p-3 rounded-lg w-fit ${msg.sender === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-200'}`}>
+            <div key={index} className={`my-2 p-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-200'}`}>
               {msg.text}
             </div>
           ))}
         </div>
-
-        <div className='flex items-center border-t border-gray-300 p-2'>
+        <div className='flex items-center'>
           <input
             type='text'
             className='flex-grow border border-gray-300 rounded-md px-4 py-2 mr-2'
             placeholder='Type your message...'
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
           />
           <button
             className='bg-blue-500 text-white px-4 py-2 rounded-md'
@@ -89,9 +145,30 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Right Sidebar - Repository (placeholder for now) */}
+      {/* Right Sidebar - Repositories */}
       <div className='w-1/5 border-l border-gray-300 p-4'>
-        <div className='font-bold text-lg mb-4'>Repository</div>
+        <div className='font-bold text-lg mb-4'>Repositories</div>
+        <div className='flex flex-col'>
+          {repositories.map(repo => (
+            <div 
+              key={repo.id} 
+              className={`py-2 px-4 rounded-md cursor-pointer ${activeRepo?.id === repo.id ? 'bg-blue-200' : ''}`}
+              onClick={() => handleSelectRepo(repo)}
+            >
+              {repo.name}
+            </div>
+          ))}
+        </div>
+        {repoStructure && (
+          <div className='mt-4'>
+            <div className='font-bold'>Repository Structure:</div>
+            <ul className='list-disc pl-4 mt-2 max-h-60 overflow-y-auto'>
+              {repoStructure.map(item => (
+                <li key={item.sha} className='text-sm'>{item.path}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
