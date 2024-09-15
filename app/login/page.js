@@ -1,8 +1,8 @@
-"use client"
+"use client";
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
-export default function Page() {
+export default function page() {
   const router = useRouter();
 
   const handleGitHubLogin = async () => {
