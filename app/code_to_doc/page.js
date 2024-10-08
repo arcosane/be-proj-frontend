@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import FileTree from '@/components/FileTree';
 
 export default function Page() {
   const API_BASE_URL = 'http://localhost:8000/api';
@@ -159,17 +160,11 @@ export default function Page() {
             </div>
           ))}
         </div>
-        {repoStructure && (
-          <div className='mt-4'>
-            <div className='font-bold'>Repository Structure:</div>
-            <ul className='list-disc pl-4 mt-2 max-h-60 overflow-y-auto'>
-              {repoStructure.map(item => (
-                <li key={item.sha} className='text-sm'>{item.path}</li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
+      <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold">Project File Structure</h1>
+      {repoStructure ? <FileTree tree={repoStructure} /> : <p>Loading...</p>}
+    </div>
     </div>
   );
 }
