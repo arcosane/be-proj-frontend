@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import FileTree from '@/components/FileTree';
@@ -12,6 +12,7 @@ export default function Page() {
   const [repositories, setRepositories] = useState([]);
   const [activeRepo, setActiveRepo] = useState(null);
   const [repoStructure, setRepoStructure] = useState(null);
+  const [apiResponse, setApiResponse] = useState(null);
 
   useEffect(() => {
     fetchChats();
@@ -20,15 +21,15 @@ export default function Page() {
 
   const fetchRepositories = async () => {
     try {
-        const response = await fetch('http://localhost:8000/api/github-repos/', {
-            method: 'GET',
-            credentials: 'include',
-          });
-          if (!response.ok) {
-            throw new Error('Failed to fetch repositories');
-          }
-          const data = await response.json();
-          setRepositories(data);
+      const response = await fetch(`${API_BASE_URL}/github-repos/`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch repositories');
+      }
+      const data = await response.json();
+      setRepositories(data);
     } catch (error) {
       console.error('Error fetching repositories:', error);
     }
@@ -42,7 +43,7 @@ export default function Page() {
       console.error('Error fetching chats:', error);
     }
   };
-  
+
   const fetchMessages = async (chatId) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/chats/${chatId}/messages/`, { withCredentials: true });
@@ -51,12 +52,12 @@ export default function Page() {
       console.error('Error fetching messages:', error);
     }
   };
-  
+
   const handleSendMessage = async () => {
     if (inputValue.trim() === '' || !activeChat) return;
     try {
       const response = await axios.post(`${API_BASE_URL}/chats/${activeChat}/messages/`, {
-        text: inputValue
+        text: inputValue,
       }, { withCredentials: true });
       setMessages([...messages, response.data.user_message, response.data.bot_response]);
       setInputValue('');
@@ -64,11 +65,11 @@ export default function Page() {
       console.error('Error sending message:', error);
     }
   };
-  
+
   const handleNewChat = async () => {
     try {
       const response = await axios.post(`${API_BASE_URL}/chats/`, {
-        chat_name: `Chat ${chats.length + 1}`
+        chat_name: `Chat ${chats.length + 1}`,
       }, { withCredentials: true });
       setChats([...chats, response.data]);
       setActiveChat(response.data.id);
@@ -77,7 +78,7 @@ export default function Page() {
       console.error('Error creating new chat:', error);
     }
   };
-  
+
   const handleSelectRepo = async (repo) => {
     setActiveRepo(repo);
     try {
@@ -88,23 +89,58 @@ export default function Page() {
     }
   };
 
+  const handleGenerateDocument = async () => {
+    if (!inputValue.trim()) return;
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/llm-response/`, {
+        question: inputValue,
+      }, { withCredentials: true });
+      setApiResponse(response.data.api_response);
+      setMessages([...messages, { text: inputValue, sender: 'user' }, { text: response.data.api_response, sender: 'bot' }]);
+      setInputValue('');
+    } catch (error) {
+      console.error('Error generating document:', error);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/download-pdf/`, {
+        api_response: apiResponse,
+      }, {
+        responseType: 'blob',
+        withCredentials: true,
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'response.pdf');
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+    }
+  };
+
   return (
-    <div className='flex flex-row w-full h-screen'>
+    <div className="flex flex-row w-full h-screen">
       {/* Left Sidebar - Chats */}
-      <div className='w-1/5 border-r border-gray-300 p-4'>
-        <div className='font-bold text-lg mb-4'>Chats</div>
-        <button 
-          className='bg-blue-500 text-white px-6 py-2 rounded-md'
+      <div className="w-1/5 border-r border-gray-300 p-4">
+        <div className="font-bold text-lg mb-4">Chats</div>
+        <button
+          className="bg-blue-500 text-white px-6 py-2 rounded-md"
           onClick={handleNewChat}
         >
           New Chat
         </button>
-        <div className='flex flex-col mt-4'>
+        <div className="flex flex-col mt-4">
           {chats ? (
             <>
-            {chats.map(chat => (
-                <div 
-                  key={chat.id} 
+              {chats.map((chat) => (
+                <div
+                  key={chat.id}
                   className={`py-2 px-4 rounded-md cursor-pointer ${activeChat === chat.id ? 'bg-blue-200' : ''}`}
                   onClick={() => {
                     setActiveChat(chat.id);
@@ -114,45 +150,61 @@ export default function Page() {
                   {chat.chat_name}
                 </div>
               ))}
-              </>
-          ):(<></>)}
+            </>
+          ) : (
+            <></>
+          )}
         </div>
       </div>
 
       {/* Main Chat Section */}
-      <div className='w-3/5 flex flex-col p-4'>
-        <div className='chat-content flex-grow overflow-y-auto mb-4'>
+      <div className="w-3/5 flex flex-col p-4">
+        <div className="chat-content flex-grow overflow-y-auto mb-4">
           {messages.map((msg, index) => (
             <div key={index} className={`my-2 p-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-200'}`}>
               {msg.text}
             </div>
           ))}
         </div>
-        <div className='flex items-center'>
+        <div className="flex items-center">
           <input
-            type='text'
-            className='flex-grow border border-gray-300 rounded-md px-4 py-2 mr-2'
-            placeholder='Type your message...'
+            type="text"
+            className="flex-grow border border-gray-300 rounded-md px-4 py-2 mr-2"
+            placeholder="Type your message..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
           />
           <button
-            className='bg-blue-500 text-white px-4 py-2 rounded-md'
+            className="bg-blue-500 text-white px-4 py-2 rounded-md"
             onClick={handleSendMessage}
           >
             Send
           </button>
         </div>
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded-md mt-4"
+          onClick={handleGenerateDocument}
+        >
+          Generate Document
+        </button>
+        {apiResponse && (
+          <button
+            className="bg-red-500 text-white px-4 py-2 rounded-md mt-4"
+            onClick={handleDownloadPdf}
+          >
+            Download PDF
+          </button>
+        )}
       </div>
 
       {/* Right Sidebar - Repositories */}
-      <div className='w-1/5 border-l border-gray-300 p-4'>
-        <div className='font-bold text-lg mb-4'>Repositories</div>
-        <div className='flex flex-col'>
-          {repositories.map(repo => (
-            <div 
-              key={repo.id} 
+      <div className="w-1/5 border-l border-gray-300 p-4">
+        <div className="font-bold text-lg mb-4">Repositories</div>
+        <div className="flex flex-col">
+          {repositories.map((repo) => (
+            <div
+              key={repo.id}
               className={`py-2 px-4 rounded-md cursor-pointer ${activeRepo?.id === repo.id ? 'bg-blue-200' : ''}`}
               onClick={() => handleSelectRepo(repo)}
             >
@@ -162,9 +214,9 @@ export default function Page() {
         </div>
       </div>
       <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold">Project File Structure</h1>
-      {repoStructure ? <FileTree tree={repoStructure} /> : <p>Loading...</p>}
-    </div>
+        <h1 className="text-2xl font-bold">Project File Structure</h1>
+        {repoStructure ? <FileTree tree={repoStructure} /> : <p>Loading...</p>}
+      </div>
     </div>
   );
 }

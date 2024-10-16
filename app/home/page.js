@@ -48,7 +48,7 @@ export default function page() {
 
   return (
     <div className='bg-black'>
-      <Navbar />
+      <Navbar username = {username} />
       <Particles
         className="absolute inset-0"
         quantity={500}
