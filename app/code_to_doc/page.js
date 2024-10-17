@@ -111,20 +111,18 @@ export default function Page() {
 
 
   const handleSummarizeRepo = async () => {
-    if (!activeRepo) return;
+    if (!activeRepo || !activeChat) return;
     try {
       const response = await axios.post(`${API_BASE_URL}/summarize-repo/`, {
-        repo_name: activeRepo.name
+        repo_name: activeRepo.name,
+        chat_id: activeChat
       }, { withCredentials: true });
-      console.log(response.data.summary)
+      console.log(response.data.summary);
       setRepoSummary(response.data.summary);
       
-      // Add the summary to the chat messages
-      const summaryMessage = {
-        sender: 'bot',
-        text: `Here's a summary of the repository "${activeRepo.name}":\n\n${response.data.summary}`
-      };
-      setMessages(prevMessages => [...prevMessages, summaryMessage]);
+      // The summary is now automatically added as a new message in the backend
+      // Refresh the messages to include the new summary
+      fetchMessages(activeChat);
     } catch (error) {
       console.error('Error summarizing repo:', error);
     }
