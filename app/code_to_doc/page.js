@@ -12,8 +12,7 @@ export default function Page() {
   const [repositories, setRepositories] = useState([]);
   const [activeRepo, setActiveRepo] = useState(null);
   const [repoStructure, setRepoStructure] = useState(null);
-  const [apiResponse, setApiResponse] = useState(null);
-
+  const [repoSummary, setRepoSummary] = useState('');
   useEffect(() => {
     fetchChats();
     fetchRepositories();
@@ -80,6 +79,7 @@ export default function Page() {
   };
 
   const handleSelectRepo = async (repo) => {
+    console.log(repo, "Selected Repository");
     setActiveRepo(repo);
     try {
       const response = await axios.get(`${API_BASE_URL}/repo-structure/${repo.name}/`, { withCredentials: true });
@@ -106,6 +106,27 @@ export default function Page() {
       link.click();
     } catch (error) {
       console.error('Error downloading PDF:', error);
+    }
+  };
+
+
+  const handleSummarizeRepo = async () => {
+    if (!activeRepo) return;
+    try {
+      const response = await axios.post(`${API_BASE_URL}/summarize-repo/`, {
+        repo_name: activeRepo.name
+      }, { withCredentials: true });
+      console.log(response.data.summary)
+      setRepoSummary(response.data.summary);
+      
+      // Add the summary to the chat messages
+      const summaryMessage = {
+        sender: 'bot',
+        text: `Here's a summary of the repository "${activeRepo.name}":\n\n${response.data.summary}`
+      };
+      setMessages(prevMessages => [...prevMessages, summaryMessage]);
+    } catch (error) {
+      console.error('Error summarizing repo:', error);
     }
   };
 
@@ -146,25 +167,20 @@ export default function Page() {
       <div className="w-full flex flex-col p-4">
         <div className="chat-content flex-grow overflow-y-auto mb-4">
           {messages.map((msg, index) => (
-            <div>
-              {msg.sender == 'user' ? 
-              <div key={index} className={`my-2 p-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-200'}`}>
-              {msg.text}
-            </div>  :
-            <div key={index} className={`my-2 p-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-200'}`}>
-            {msg.text}
-            <div>
-            {msg && (
-          <button
-            className="bg-red-500 text-white px-4 py-2 rounded-md mt-4"
-            onClick={()=>{handleDownloadPdf(msg.text)}}
-          >
-            Download PDF
-          </button>
-        )}
-            </div>
-          </div>
-            }
+            <div key={index}>
+              <div className={`my-2 p-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-200'}`}>
+                {msg.text}
+              </div>
+              {msg.sender === 'bot' && (
+                <div>
+                  <button
+                    className="bg-red-500 text-white px-4 py-2 rounded-md mt-4"
+                    onClick={() => handleDownloadPdf(msg.text)}
+                  >
+                    Download PDF
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -183,15 +199,15 @@ export default function Page() {
           >
             Send
           </button>
-        </div>
-        {apiResponse && (
+          {activeRepo && (
           <button
-            className="bg-red-500 text-white px-4 py-2 rounded-md mt-4"
-            onClick={handleDownloadPdf}
+            className="bg-green-500 text-white px-4 py-2 rounded-md mt-4"
+            onClick={handleSummarizeRepo}
           >
-            Download PDF
+            Summarize Repo
           </button>
         )}
+        </div>
       </div>
 
       {/* Right Sidebar - Repositories */}
@@ -204,10 +220,11 @@ export default function Page() {
               className={`py-2 px-4 rounded-md cursor-pointer ${activeRepo?.id === repo.id ? 'bg-blue-200' : ''}`}
               onClick={() => handleSelectRepo(repo)}
             >
-              {repo.name}
+              {repo.name}{console.log(repo.name)}
             </div>
           ))}
         </div>
+        
       </div>
       <div className="container mx-auto p-4">
         <h1 className="text-2xl font-bold">Project File Structure</h1>
