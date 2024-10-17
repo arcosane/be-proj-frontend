@@ -104,10 +104,10 @@ export default function Page() {
     }
   };
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = async (message) => {
     try {
       const response = await axios.post(`${API_BASE_URL}/download-pdf/`, {
-        api_response: apiResponse,
+        api_response: message,
       }, {
         responseType: 'blob',
         withCredentials: true,
@@ -158,11 +158,28 @@ export default function Page() {
       </div>
 
       {/* Main Chat Section */}
-      <div className="w-3/5 flex flex-col p-4">
+      <div className="w-full flex flex-col p-4">
         <div className="chat-content flex-grow overflow-y-auto mb-4">
           {messages.map((msg, index) => (
-            <div key={index} className={`my-2 p-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-200'}`}>
+            <div>
+              {msg.sender == 'user' ? 
+              <div key={index} className={`my-2 p-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-200'}`}>
               {msg.text}
+            </div>  :
+            <div key={index} className={`my-2 p-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-200'}`}>
+            {msg.text}
+            <div>
+            {msg && (
+          <button
+            className="bg-red-500 text-white px-4 py-2 rounded-md mt-4"
+            onClick={()=>{handleDownloadPdf(msg.text)}}
+          >
+            Download PDF
+          </button>
+        )}
+            </div>
+          </div>
+            }
             </div>
           ))}
         </div>
@@ -184,7 +201,7 @@ export default function Page() {
         </div>
         <button
           className="bg-green-500 text-white px-4 py-2 rounded-md mt-4"
-          onClick={handleGenerateDocument}
+          onClick={() => {handleGenerateDocument(msg.text)}}
         >
           Generate Document
         </button>
