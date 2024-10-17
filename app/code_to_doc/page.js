@@ -89,21 +89,6 @@ export default function Page() {
     }
   };
 
-  const handleGenerateDocument = async () => {
-    if (!inputValue.trim()) return;
-
-    try {
-      const response = await axios.post(`${API_BASE_URL}/llm-response/`, {
-        question: inputValue,
-      }, { withCredentials: true });
-      setApiResponse(response.data.api_response);
-      setMessages([...messages, { text: inputValue, sender: 'user' }, { text: response.data.api_response, sender: 'bot' }]);
-      setInputValue('');
-    } catch (error) {
-      console.error('Error generating document:', error);
-    }
-  };
-
   const handleDownloadPdf = async (message) => {
     try {
       const response = await axios.post(`${API_BASE_URL}/download-pdf/`, {
@@ -199,12 +184,6 @@ export default function Page() {
             Send
           </button>
         </div>
-        <button
-          className="bg-green-500 text-white px-4 py-2 rounded-md mt-4"
-          onClick={() => {handleGenerateDocument(msg.text)}}
-        >
-          Generate Document
-        </button>
         {apiResponse && (
           <button
             className="bg-red-500 text-white px-4 py-2 rounded-md mt-4"
