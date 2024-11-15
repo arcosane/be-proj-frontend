@@ -120,7 +120,7 @@ export default function page() {
             <div className="relative flex h-[300px] w-[300px] p-6 flex-col items-center rounded-lg border md:shadow-xl">
               <h2 className='text-2xl text-center mb-4'>Project Roadmap Generator</h2>
               <p className='text-center'>Creates visual project roadmaps based on codebase and issue tracking information, facilitating project planning and management.</p>
-              <a href='' className='mt-auto z-10 bg-white text-black px-4 py-2 cursor-pointer rounded-lg shadow-sm hover:shadow-xl'>Learn More</a>
+              <a href='/projectRoadmap' className='mt-auto z-10 bg-white text-black px-4 py-2 cursor-pointer rounded-lg shadow-sm hover:shadow-xl'>Learn More</a>
               <Ripple />
             </div>
             <div className="relative flex h-[300px] w-[300px] p-6 flex-col items-center rounded-lg border md:shadow-xl">
