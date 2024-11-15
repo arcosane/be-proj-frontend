@@ -57,6 +57,7 @@ export default function Page() {
       console.error('Error creating new chat:', error);
     }
   };
+
   return (
     <div className="flex flex-row w-full h-screen">
       {/* Left Sidebar - Chats */}
@@ -70,38 +71,37 @@ export default function Page() {
         </button>
         <div className="flex flex-col mt-4">
           {chats ? (
-            <>
-              {chats.map((chat) => (
-                <div
-                  key={chat.id}
-                  className={`py-2 px-4 rounded-md cursor-pointer ${activeChat === chat.id ? 'bg-blue-200' : ''}`}
-                  onClick={() => {
-                    setActiveChat(chat.id);
-                    fetchMessages(chat.id);
-                  }}
-                >
-                  {chat.chat_name}
-                </div>
-              ))}
-            </>
+            chats.map((chat) => (
+              <div
+                key={chat.id}
+                className={`py-2 px-4 rounded-md cursor-pointer ${activeChat === chat.id ? 'bg-blue-200' : ''}`}
+                onClick={() => {
+                  setActiveChat(chat.id);
+                  fetchMessages(chat.id);
+                }}
+              >
+                {chat.chat_name}
+              </div>
+            ))
           ) : (
-            <></>
+            <div>No chats available</div>
           )}
         </div>
       </div>
 
       {/* Main Chat Section */}
-      <div className="w-full flex flex-col p-4">
+      <div className="w-4/5 flex flex-col p-4 h-full">
         <div className="chat-content flex-grow overflow-y-auto mb-4">
           {messages.map((msg, index) => (
-            <div key={index}>
-              <div className={`my-2 p-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-200'}`}>
-                {msg.text}
+            <div key={index} className={`my-2 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
+              <div className={`p-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-200'} overflow-x-auto overflow-y-auto`}>
+                {/* Render HTML content (including <pre><code> for code formatting) */}
+                <div dangerouslySetInnerHTML={{ __html: msg.text }} />
               </div>
             </div>
           ))}
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center mt-4">
           <input
             type="text"
             className="flex-grow border border-gray-300 rounded-md px-4 py-2 mr-2"
