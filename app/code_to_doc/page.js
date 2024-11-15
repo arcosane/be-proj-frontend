@@ -166,9 +166,8 @@ export default function Page() {
         <div className="chat-content flex-grow overflow-y-auto mb-4">
           {messages.map((msg, index) => (
             <div key={index}>
-              <div className={`my-2 p-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-200'}`}>
-                {msg.text}
-              </div>
+              <div className={`my-2 p-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-200'} overflow-x-auto overflow-y-auto`} dangerouslySetInnerHTML={{ __html: msg.text }} />
+
               {msg.sender === 'bot' && (
                 <div>
                   <button

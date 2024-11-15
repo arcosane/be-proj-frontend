@@ -9,7 +9,11 @@ export default function Page() {
   const [inputValue, setInputValue] = useState('');
   const [chats, setChats] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
+  const [pdfFile, setPdfFile] = useState(null);
 
+  const handleFileChange = (e) => {
+    setPdfFile(e.target.files[0]);
+  };
   useEffect(() => {
     fetchChats();
   }, []);
@@ -34,10 +38,18 @@ export default function Page() {
 
   const handleSendMessage = async () => {
     if (inputValue.trim() === '' || !activeChat) return;
+    let formData = new FormData();
+    formData.append('text', inputValue);
+    if(pdfFile){
+      formData.append('pdf', pdfFile);
+    }
     try {
-      const response = await axios.post(`${API_BASE_URL}/code-gen-chats/${activeChat}/messages/`, {
-        text: inputValue,
-      }, { withCredentials: true });
+      const response = await axios.post(`${API_BASE_URL}/code-gen-chats/${activeChat}/messages/`,formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data' // Important for file uploads
+        },
+        withCredentials: true
+      });
       setMessages([...messages, response.data.user_message, response.data.bot_response]);
       setInputValue('');
     } catch (error) {
@@ -102,20 +114,26 @@ export default function Page() {
           ))}
         </div>
         <div className="flex items-center mt-4">
-          <input
-            type="text"
-            className="flex-grow border border-gray-300 rounded-md px-4 py-2 mr-2"
-            placeholder="Type your message..."
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-          />
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-md"
-            onClick={handleSendMessage}
-          >
-            Send
-          </button>
+        <input
+          type="file"
+          accept=".pdf" // Accept only PDF files
+          onChange={handleFileChange}
+          className="mr-2"
+        />
+        <input
+          type="text"
+          className="flex-grow border border-gray-300 rounded-md px-4 py-2 mr-2"
+          placeholder="Type your message or paste text from PDF..."
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+        />
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded-md"
+          onClick={handleSendMessage}
+        >
+          Send
+        </button>
         </div>
       </div>
     </div>
