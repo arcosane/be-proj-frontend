@@ -1,7 +1,6 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import FileTree from '@/components/FileTree';
 
 export default function Page() {
   const API_BASE_URL = 'http://localhost:8000/api';
@@ -10,13 +9,17 @@ export default function Page() {
   const [chats, setChats] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
   const [pdfFile, setPdfFile] = useState(null);
+  const chatContentRef = useRef(null);
 
-  const handleFileChange = (e) => {
-    setPdfFile(e.target.files[0]);
-  };
   useEffect(() => {
     fetchChats();
   }, []);
+
+  useEffect(() => {
+    if (chatContentRef.current) {
+      chatContentRef.current.scrollTop = chatContentRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const fetchChats = async () => {
     try {
@@ -40,11 +43,11 @@ export default function Page() {
     if (inputValue.trim() === '' || !activeChat) return;
     let formData = new FormData();
     formData.append('text', inputValue);
-    if(pdfFile){
+    if (pdfFile) {
       formData.append('pdf', pdfFile);
     }
     try {
-      const response = await axios.post(`${API_BASE_URL}/code-gen-chats/${activeChat}/messages/`,formData, {
+      const response = await axios.post(`${API_BASE_URL}/code-gen-chats/${activeChat}/messages/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data' // Important for file uploads
         },
@@ -52,6 +55,7 @@ export default function Page() {
       });
       setMessages([...messages, response.data.user_message, response.data.bot_response]);
       setInputValue('');
+      setPdfFile(null); // Clear the PDF file after sending
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -68,6 +72,10 @@ export default function Page() {
     } catch (error) {
       console.error('Error creating new chat:', error);
     }
+  };
+
+  const handleFileChange = (e) => {
+    setPdfFile(e.target.files[0]);
   };
 
   return (
@@ -103,37 +111,44 @@ export default function Page() {
 
       {/* Main Chat Section */}
       <div className="w-4/5 flex flex-col p-4 h-full">
-        <div className="chat-content flex-grow overflow-y-auto mb-4">
+        <div ref={chatContentRef} className="chat-content flex-grow overflow-y-auto mb-4">
           {messages.map((msg, index) => (
-            <div key={index} className={`my-2 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
-              <div className={`p-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-200'} overflow-x-auto overflow-y-auto`}>
-                {/* Render HTML content (including <pre><code> for code formatting) */}
+            <div key={index} className={`my-2 flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`p-2 rounded-lg ${msg.sender === 'user' ? 'bg-blue-100' : 'bg-gray-200'} max-w-3/4 break-words`}>
                 <div dangerouslySetInnerHTML={{ __html: msg.text }} />
               </div>
             </div>
           ))}
         </div>
+
         <div className="flex items-center mt-4">
-        <input
-          type="file"
-          accept=".pdf" // Accept only PDF files
-          onChange={handleFileChange}
-          className="mr-2"
-        />
-        <input
-          type="text"
-          className="flex-grow border border-gray-300 rounded-md px-4 py-2 mr-2"
-          placeholder="Type your message or paste text from PDF..."
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-        />
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded-md"
-          onClick={handleSendMessage}
-        >
-          Send
-        </button>
+          {/* Custom File Upload Button */}
+          <label htmlFor="pdf-upload" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded cursor-pointer mr-2">
+            Upload PDF
+          </label>
+          <input
+            id="pdf-upload"
+            type="file"
+            accept=".pdf"
+            onChange={handleFileChange}
+            className="hidden" // Hide the default input
+          />
+          {pdfFile && <span className="text-gray-500">{pdfFile.name}</span>} {/* Show filename */}
+
+          <input
+            type="text"
+            className="flex-grow border border-gray-300 rounded-md px-4 py-2 mr-2"
+            placeholder="Type your message or paste text from PDF..."
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+          />
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+            onClick={handleSendMessage}
+          >
+            Send
+          </button>
         </div>
       </div>
     </div>
